@@ -52,4 +52,4 @@ v1.0.2
 
 == Upgrade Notice ==
 
-在百度BAE上使用此插件请先到http://blog.gimhoy.com/archives/bcs-support.html下载，然后用SVN上传到BAE空间。
+在百度BAE上使用此插件请先到http://blog.gimhoy.com/archives/bcs-support.html 下载，然后用SVN上传到BAE空间。
