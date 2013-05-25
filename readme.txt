@@ -4,7 +4,7 @@ Donate link: http://blog.gimhoy.com/archives/bcs-support.html
 Tags: attachment, baidu, BAE, BCS, manager, images, thumbnail
 Requires at least: 1.5
 Tested up to: 3.5.1
-Stable tag: 1.0.2
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,8 @@ Support xmlrpc on Baidu App Engine(BAE).
 
 详见http://blog.gimhoy.com/archives/bcs-support.html.
 For more details, please visit http://blog.gimhoy.com/archives/bcs-support.html.
+
+Github开源项目：https://github.com/Gimhoy/BCS-Support/
 
 ==  Installation ==
 
@@ -46,10 +48,13 @@ Please visit http://blog.gimhoy.com/archives/bcs-support.html.
 
 == Changelog == 
 
+v1.1.0
+增加删除功能，后台删除文件时会同步删除BCS中的文件（Thanks Loveyuki（loveyuki@gmail.com））
+
 v1.0.2
 1.新增对xmlrpc的支持，可直接用Windows Live Writer发布文章
 2.文件保存目录更改为 bucket/blog/年月/文件名  如archives/blog/201303/bcs-support.zip
 
 == Upgrade Notice ==
 
-在百度BAE上使用此插件请先到http://blog.gimhoy.com/archives/bcs-support.html 下载，然后用SVN上传到BAE空间。
+在百度BAE上使用此插件请先到http://blog.gimhoy.com/archives/bcs-support.html下载，然后用SVN上传到BAE空间。

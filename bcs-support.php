@@ -1,7 +1,7 @@
 <?php
 /**
  * @package BCS Support
- * @version 1.0.2
+ * @version 1.1.0
  */
 /*
 Plugin Name: BCS Support
@@ -132,7 +132,6 @@ function format_bcs_url($url) {
 }
 add_filter('wp_get_attachment_url', 'format_bcs_url');
 
-
 function bcs_plugin_action_links( $links, $file ) {
 	if ( $file == plugin_basename( dirname(__FILE__).'/bcs-support.php' ) ) {
 		$links[] = '<a href="options-general.php?page=' . BCS_BASEFOLDER . '/bcs-support.php">'.__('Settings').'</a>';
@@ -142,6 +141,41 @@ function bcs_plugin_action_links( $links, $file ) {
 }
 
 add_filter( 'plugin_action_links', 'bcs_plugin_action_links', 10, 2 );
+
+//删除BCS上的附件 Thanks Loveyuki（loveyuki@gmail.com）
+function del_attachments_from_bcs($file) {
+require_once('bcs.class.php');
+
+$bcs_options = get_option('bcs_options', TRUE);
+
+$bcs_bucket = attribute_escape($bcs_options['bucket']);
+
+if(false === getenv ( 'HTTP_BAE_ENV_AK' )) {
+$bcs_ak = attribute_escape($bcs_options['ak']);
+}
+
+if(false === getenv ( 'HTTP_BAE_ENV_SK' )) {
+$bcs_sk = attribute_escape($bcs_options['sk']);
+}
+
+if(!is_object($baidu_bcs))
+$baidu_bcs = new BaiduBCS($bcs_ak, $bcs_sk);
+
+$bucket = $bcs_bucket;
+
+$upload_dir = wp_upload_dir();
+
+$object = str_replace($upload_dir['basedir'],'',$file);
+$object = ltrim( $object , '/' );
+
+$object = str_replace('http://bcs.duapp.com/'.$bucket,'',$object);
+
+$baidu_bcs->delete_object($bcs_bucket,$object);
+
+return $file;
+}
+
+add_action('wp_delete_file', 'del_attachments_from_bcs');
 
 function bcs_add_setting_page() {
     add_options_page('BCS Setting', 'BCS Setting', 8, __FILE__, 'bcs_setting_page');
@@ -204,6 +238,10 @@ function bcs_setting_page() {
             <input type="submit" name="submit" value="更新" />
         </fieldset>
     </form>
+	<h2>赞助</h2>
+		<p>如果你发现这个插件对你有帮助，欢迎<a href="https://me.alipay.com/gimhoy" target="_blank">赞助</a>!</p>
+		<p><a href="https://me.alipay.com/gimhoy" target="_blank"><img src="http://archives.gimhoy.cn/archives/alipay_donate.png" alt="支付宝捐赠" title="支付宝" /></a></p>
+	<br />
 </div>
 <?php
 }

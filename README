@@ -33,6 +33,9 @@ Please visit http://blog.gimhoy.com/archives/bcs-support.html.
 
 == Changelog == 
 
+v1.1.0
+增加删除功能，后台删除文件时会同步删除BCS中的文件（Thanks Loveyuki（loveyuki@gmail.com））
+
 v1.0.2
 1.新增对xmlrpc的支持，可直接用Windows Live Writer发布文章
 2.文件保存目录更改为 bucket/blog/年月/文件名  如archives/blog/201303/bcs-support.zip
