@@ -33,6 +33,9 @@ Please visit http://blog.gimhoy.com/archives/bcs-support.html.
 
 == Changelog == 
 
+v1.1.1
+增加防盗链功能！Add  anti-stealing-link function!
+
 v1.1.0
 增加删除功能，后台删除文件时会同步删除BCS中的文件（Thanks Loveyuki（loveyuki@gmail.com））
 

@@ -1,14 +1,14 @@
 <?php
 /**
  * @package BCS Support
- * @version 1.1.0
+ * @version 1.1.1
  */
 /*
 Plugin Name: BCS Support
 Plugin URI: http://blog.gimhoy.com/archives/bcs-support.html
 Description: This is a plugin for bcs.
 Author: HJin.me & Gimhoy
-Version: 1.0.2
+Version: 1.1.1
 Author URI: http://blog.gimhoy.com
 */
 
@@ -75,9 +75,21 @@ function mv_attachments_to_bcs($data) {
 	$month = date("m");
 	$object =  "/blog/".$year.$month."/".basename($data['file']);
 	$file = $data['file'];
-	$opt = array(
-		"acl" => "public-read"
-	);
+	$refererurl = preg_replace('#^www\.#', '', strtolower($_SERVER['SERVER_NAME']));
+	$acl = array (
+			'statements' => array (
+					'0' => array (
+							'user' => array (
+									"*" ), 
+							'resource' => array (
+									$bucket . '/' .$object), 
+							'action' => array (
+									BaiduBCS::BCS_SDK_ACL_ACTION_GET_OBJECT
+									 ), 
+							'effect' => BaiduBCS::BCS_SDK_ACL_EFFECT_ALLOW,
+							'referer' => array (
+									$refererurl ) ) ) );
+	$opt = array($acl);
 	$baidu_bcs->create_object ( $bucket, $object, $file, $opt );
 
 	$url = "http://bcs.duapp.com/{$bucket}{$object}"; 

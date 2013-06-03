@@ -4,7 +4,7 @@ Donate link: http://blog.gimhoy.com/archives/bcs-support.html
 Tags: attachment, baidu, BAE, BCS, manager, images, thumbnail
 Requires at least: 1.5
 Tested up to: 3.5.1
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,9 @@ Please visit http://blog.gimhoy.com/archives/bcs-support.html.
 ![截图](screenshot.jpg "截图")
 
 == Changelog == 
+
+v1.1.1
+增加防盗链功能！Add  anti-stealing-link function!
 
 v1.1.0
 增加删除功能，后台删除文件时会同步删除BCS中的文件（Thanks Loveyuki（loveyuki@gmail.com））
