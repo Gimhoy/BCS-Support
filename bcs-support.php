@@ -1,14 +1,14 @@
 <?php
 /**
  * @package BCS Support
- * @version 1.1.1
+ * @version 1.2.3
  */
 /*
 Plugin Name: BCS Support
 Plugin URI: http://blog.gimhoy.com/archives/bcs-support.html
 Description: This is a plugin for bcs.
-Author: HJin.me & Gimhoy
-Version: 1.1.1
+Author: Gimhoy
+Version: 1.2.3
 Author URI: http://blog.gimhoy.com
 */
 
@@ -17,7 +17,7 @@ if ( !defined('WP_PLUGIN_URL') )
 
 define('BCS_BASENAME', plugin_basename(__FILE__));
 define('BCS_BASEFOLDER', plugin_basename(dirname(__FILE__)));
-define('BCS_FILENAME', str_replace(DFM_BASEFOLDER.'/', '', plugin_basename(__FILE__)));
+define('BCS_FILENAME', str_replace(BCS_BASEFOLDER.'/', '', plugin_basename(__FILE__)));
 
 // 初始化选项
 register_activation_hook(__FILE__, 'bcs_set_options');
@@ -30,6 +30,10 @@ function bcs_set_options() {
         'bucket' => "",
         'ak' => "",
     	'sk' => "",
+		'referer' => "",
+		'referer2' => "",
+		'is_Enabled_asl'  => "",
+		'hiPath'  => "",
     );
     
     add_option('bcs_options', $options, '', 'yes');
@@ -43,7 +47,7 @@ function bcs_admin_warnings() {
 	if ( !$bcs_options['bucket'] && !isset($_POST['submit']) ) {
 		function bcs_warning() {
 			echo "
-			<div id='bcs-warning' class='updated fade'><p><strong>".__('Bcs is almost ready.')."</strong> ".sprintf(__('You must <a href="%1$s">enter your BCS Bucket </a> for it to work.'), "options-general.php?page=" . BCS_BASEFOLDER . "/bcs-support.php")."</p></div>
+			<div id='bcs-warning' class='updated fade'><p><strong>".__('BCS-Support插件已启用.')."</strong> ".sprintf(__('但你还必须 <a href="%1$s">输入你的BCS Bucket 名称</a> 它才能正常工作.'), "options-general.php?page=" . BCS_BASEFOLDER . "/bcs-support.php")."</p></div>
 			";
 		}
 		add_action('admin_notices', 'bcs_warning');
@@ -66,32 +70,57 @@ function mv_attachments_to_bcs($data) {
     if(false === getenv ( 'HTTP_BAE_ENV_SK' )) {
 	    $bcs_sk = attribute_escape($bcs_options['sk']);
     }
+	$is_Enabled_asl = attribute_escape($bcs_options['is_Enabled_asl']);
+	$hiPath = attribute_escape($bcs_options['hiPath']);
+	if(empty($hiPath)){ $hiPath = "/blog/{year}{month}/";}
     
 	$baidu_bcs = new BaiduBCS($bcs_ak, $bcs_sk);
 
 
 	$bucket = $bcs_bucket;
 	$year = date("Y");
-	$month = date("m");
-	$object =  "/blog/".$year.$month."/".basename($data['file']);
+ 	$month = date("m");
+	$day = date("d");
+	$hiPath = str_replace('{day}', $day, $hiPath);
+	$hiPath = str_replace('{month}', $month, $hiPath);
+	$hiPath = str_replace('{year}', $year, $hiPath);
+  	$object =  "/".$hiPath."/".basename($data['file']);
 	$file = $data['file'];
-	$refererurl = preg_replace('#^www\.#', '', strtolower($_SERVER['SERVER_NAME']));
-	$acl = array (
+	$opt = array(
+		"acl" => "public-read"
+	);
+	$baidu_bcs->create_object ( $bucket, $object, $file, $opt );
+	if($is_Enabled_asl){
+		$referer = attribute_escape($bcs_options['referer']);
+		$referer2 = attribute_escape($bcs_options['referer2']);
+		if(!empty($referer)){
+			if(!empty($referer2)){
+				$referer = array($referer, $referer2);
+				}
+			else{
+				$referer = array($referer);
+				}
+		}
+		else{
+				$referer = preg_replace('#^www\.#', '', strtolower($_SERVER['SERVER_NAME']));
+				$referer = '*.'.preg_replace('#^blog\.#', '', $referer).'/*';
+				$referer = array($referer);
+		}
+		$acl = array (
 			'statements' => array (
 					'0' => array (
 							'user' => array (
 									"*" ), 
 							'resource' => array (
-									$bucket . '/' .$object), 
+									$bucket . $object), 
 							'action' => array (
 									BaiduBCS::BCS_SDK_ACL_ACTION_GET_OBJECT
 									 ), 
 							'effect' => BaiduBCS::BCS_SDK_ACL_EFFECT_ALLOW,
-							'referer' => array (
-									$refererurl ) ) ) );
-	$opt = array($acl);
-	$baidu_bcs->create_object ( $bucket, $object, $file, $opt );
-
+							'referer' => $referer
+									  ) ) );
+		$baidu_bcs->set_object_acl ( $bucket, $object, $acl );
+	}
 	$url = "http://bcs.duapp.com/{$bucket}{$object}"; 
 	
 	return array( 'file' => $url, 'url' => $url, 'type' => $data['type'] );
@@ -125,11 +154,42 @@ function xmlrpc_upload($args){
 
 
 	$bucket = $bcs_bucket;
-	$object =  "/" . $name;
+	$object =  "/".$hiPath."/" . $name;
 	$opt = array(
 		"acl" => "public-read"
 	);
 	$baidu_bcs->create_object_by_content ( $bucket, $object, $bits, $opt );
+	if($is_Enabled_asl){
+		$referer = attribute_escape($bcs_options['referer']);
+		$referer2 = attribute_escape($bcs_options['referer2']);
+		if(!empty($referer)){
+			if(!empty($referer2)){
+				$referer = array($referer, $referer2);
+				}
+			else{
+				$referer = array($referer);
+				}
+		}
+		else{
+				$referer = preg_replace('#^www\.#', '', strtolower($_SERVER['SERVER_NAME']));
+				$referer = '*.'.preg_replace('#^blog\.#', '', $referer).'/*';
+				$referer = array($referer);
+		}
+		$acl = array (
+			'statements' => array (
+					'0' => array (
+							'user' => array (
+									"*" ), 
+							'resource' => array (
+									$bucket . $object), 
+							'action' => array (
+									BaiduBCS::BCS_SDK_ACL_ACTION_GET_OBJECT
+									 ), 
+							'effect' => BaiduBCS::BCS_SDK_ACL_EFFECT_ALLOW,
+							'referer' => $referer
+									  ) ) );
+		$baidu_bcs->set_object_acl ( $bucket, $object, $acl );
+	}
 	$url = "http://bcs.duapp.com/{$bucket}{$object}"; 
 	
 	return array( 'file' => $url, 'url' => $url, 'type' => $data['type'] );
@@ -207,6 +267,18 @@ function bcs_setting_page() {
 	if($_POST['sk'] && false === getenv ( 'HTTP_BAE_ENV_SK' )) {
 		$options['sk'] = trim(stripslashes($_POST['sk']));
 	}
+	if($_POST['referer']) {
+		$options['referer'] = trim(stripslashes($_POST['referer']));
+	}	
+	if($_POST['referer2']) {
+		$options['referer2'] = trim(stripslashes($_POST['referer2']));
+	}	
+	if($_POST['is_Enabled_asl']) {
+		$options['is_Enabled_asl'] = trim(stripslashes($_POST['is_Enabled_asl']));
+	}	
+	if($_POST['hiPath']) {
+		$options['hiPath'] = trim(stripslashes($_POST['hiPath']), "/");
+	}	
 	if($options !== array() ){
 	
 		update_option('bcs_options', $options);
@@ -221,33 +293,81 @@ function bcs_setting_page() {
     $bcs_bucket = attribute_escape($bcs_options['bucket']);
     $bcs_ak = attribute_escape($bcs_options['ak']);
     $bcs_sk = attribute_escape($bcs_options['sk']);
+	$bcs_referer = attribute_escape($bcs_options['referer']);
+	$bcs_referer2 = attribute_escape($bcs_options['referer2']);
+	$is_Enabled_asl = attribute_escape($bcs_options['is_Enabled_asl']);
+	$hiPath = attribute_escape($bcs_options['hiPath']); 
 ?>
 <div class="wrap" style="margin: 10px;">
-    <h2>百度云存储 设置</h2>
+    <h2>百度云存储 设置</h2> 
+	<a href="http://blog.gimhoy.com/archives/bcs-support.html" target="_blank">帮助</a>
+	<a href="http://blog.gimhoy.com/archives/bcs-support.html" target="_blank">反馈建议</a>
+	<a href="http://blog.gimhoy.com/archives/bcs-support.html" target="_blank">下载最新版本</a>
+	<a href="https://me.alipay.com/gimhoy" target="_blank"><span style='color:red'>捐赠</span></a>
     <form name="form1" method="post" action="<?php echo wp_nonce_url('./options-general.php?page=' . BCS_BASEFOLDER . '/bcs-support.php'); ?>">
+	  	<h3>基本设置</h3>	
         <fieldset>
             <legend>Bucket 设置</legend>
-            <input type="text" name="bucket" value="<?php echo $bcs_bucket;?>" placeholder="请输入云存储使用的 bucket"/>
-            <p>请先访问 <a href="http://developer.baidu.com/bae/bcs/bucket/">百度云存储</a> 创建 bucket 后，填写以上内容。</p>
+            <input type="text" id="bucket" name="bucket" value="<?php echo $bcs_bucket;?>" placeholder="请输入云存储使用的 bucket"/>
+            请先访问 <a href="http://developer.baidu.com/bae/bcs/bucket/">百度云存储</a> 创建 bucket 后，填写以上内容
+			<p></p>
         </fieldset>
-        <?php
-        if ( false === getenv ( 'HTTP_BAE_ENV_AK' ) || false === getenv ( 'HTTP_BAE_ENV_SK' )) :
-        ?>
+       <?php
+       if ( false === getenv ( 'HTTP_BAE_ENV_AK' ) || false === getenv ( 'HTTP_BAE_ENV_SK' )) :
+       ?>
         <fieldset>
             <legend>Access Key / API key</legend>
             <input type="text" name="ak" value="<?php echo $bcs_ak;?>" placeholder=""/>
-            <p>访问 <a href="http://developer.baidu.com/bae/ref/key/" target="_blank">BAE 密钥管理页面</a>，获取 AKSK</p>
+            <p></p>
         </fieldset>
         <fieldset>
             <legend>Secret Key</legend>
             <input type="text" name="sk" value="<?php echo $bcs_sk;?>" placeholder=""/>
+			访问 <a href="http://developer.baidu.com/bae/ref/key/" target="_blank">BAE 密钥管理页面</a>，获取 AK/SK
         </fieldset>
-        <?php
-        endif;
-        ?>
+	   <?php
+       endif;
+       ?>
+
+	   	<h3>上传路径设置</h3>	
+		<fieldset>
+            <legend>可自定义上传路径，默认为：blog/{year}{month}</legend>
+            <input type="text" id="hiPath" name="hiPath" value="<?php echo $hiPath;?>" placeholder="" onkeyup="pathPreview();"/>	
+			可使用的参数包括：{year} {month} {day} ,分别代表年、月、日。
+			<p id= "path_preview"></p>
+			<p></p>
+			<script type="text/javascript">
+				function pathPreview (){
+					var path = document.getElementById("hiPath").value;
+					var bucket = document.getElementById("bucket").value;
+					if(path =='' ){ path = "blog/{year}{month}"; }
+					var year = "<?php echo date("Y") ?>";
+					var month = "<?php echo date("m") ?>";
+					var day = "<?php echo date("d") ?>";
+					path = path.replace("{year}", year).replace("{month}", month).replace("{day}", day);
+					document.getElementById("path_preview").innerHTML = "示例：http://bcs.duapp.com/"+bucket+"/"+path+"/test.jpg";
+				}
+			</script>
+		</fieldset>	
+		
+	  	<h3>反盗链设置</h3>	
+        <fieldset>
+            <legend>开启反盗链<input type="checkbox" name="is_Enabled_asl" value="1" <?php if( $is_Enabled_asl ) { echo 'checked="checked"'; } ?> /></legend>	
+			<p></p>
+        </fieldset>	
+		<fieldset>
+            <legend>域名</legend>
+            <input type="text" name="referer" value="<?php echo $bcs_referer;?>" placeholder=""/>
+            反盗链设置，请按以下格式输入：*.gimhoy.com/*   若需设置多个域名，请在下面的域名2中继续输入（每个空格只限一个域名）。仅开启反盗链后有效
+			<p></p>
+		</fieldset>	
+		<fieldset>
+            <legend>域名2</legend>
+            <input type="text" name="referer2" value="<?php echo $bcs_referer2;?>" placeholder=""/>
+            如只有一个域名可不填写
+        </fieldset>			
         <fieldset class="submit">
-            <legend>更新选项</legend>
-            <input type="submit" name="submit" value="更新" />
+            <input type="submit" name="submit" value="保存更新" />
         </fieldset>
     </form>
 	<h2>赞助</h2>

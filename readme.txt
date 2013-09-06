@@ -3,8 +3,8 @@ Contributors: Gimhoy
 Donate link: http://blog.gimhoy.com/archives/bcs-support.html
 Tags: attachment, baidu, BAE, BCS, manager, images, thumbnail
 Requires at least: 1.5
-Tested up to: 3.5.1
-Stable tag: 1.1.1
+Tested up to: 3.6
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,8 +47,19 @@ Please visit http://blog.gimhoy.com/archives/bcs-support.html.
 ![截图](screenshot.jpg "截图")
 
 == Changelog == 
+v1.2.3
+可自行修改上传路径 Now you can change your upload path!
+修复xmlrpc上传路径bug  Fixed the path bug of uploading xmlrpc.
 
-v1.1.1
+v1.2.2
+修复一个小bug  Fixed a bug.
+
+v1.2.1
+修复上一版中的bug  Fixed a bug.
+增加反盗链设置，可自行选择是否设置反盗链，并可自己设置域名  Add anti-stealing-link setting.
+其他优化  Other optimized
+
+v1.2.0
 增加防盗链功能！Add  anti-stealing-link function!
 
 v1.1.0

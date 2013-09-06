@@ -31,7 +31,11 @@ For more details, please visit http://blog.gimhoy.com/archives/bcs-support.html.
 Please visit http://blog.gimhoy.com/archives/bcs-support.html.
 
 
-== Changelog == 
+== Changelog ==
+
+v1.2.3
+可自行修改上传路径 Now you can change your upload path!
+修复xmlrpc上传路径bug  Fixed the path bug of uploading xmlrpc. 
 
 v1.1.1
 增加防盗链功能！Add  anti-stealing-link function!
