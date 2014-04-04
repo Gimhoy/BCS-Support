@@ -122,7 +122,9 @@ function mv_attachments_to_bcs($data) {
 		$baidu_bcs->set_object_acl ( $bucket, $object, $acl );
 	}
 	$url = "http://bcs.duapp.com/{$bucket}{$object}"; 
-	
+
+	add_filter( 'intermediate_image_sizes', '__return_empty_array' );    // prevent creating thumbnails of 3 sizes
+  
 	return array( 'file' => $url, 'url' => $url, 'type' => $data['type'] );
 }
 
